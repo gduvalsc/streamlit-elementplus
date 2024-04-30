@@ -278,3 +278,53 @@ options = [
 props = dict(expandTrigger="hover", multiple=True)
 cas1 = Cascader(options=options, props=props, size='large', height=300)
 st.write(cas1.get())
+st.divider()
+st.markdown("###### The code used to create the Cascader component")
+st.code("""
+#####  Cascader definition
+
+def JS_create_cascader_directives(parameters):
+    def f():
+        ret = dict()
+        ret['options'] = parameters.options
+        ret['model'] = Vue.ref([])
+        ret['props'] = parameters.props
+        ret['size'] = parameters.size
+        ret['filterable'] = parameters.filterable
+        ret['clearable'] = parameters.clearable
+        return ret
+    return f
+
+def JS_create_cascader_methods(parameters):
+    ret = dict()
+    def fhandleChange(x):
+        result = []
+        if x != undefined:
+            result = JSON.parse(JSON.stringify(x))
+        Streamlit.setComponentValue(result)
+    ret['handleChange'] = fhandleChange
+    return ret
+
+def create_cascader_template():
+        ELCASCADER = gentag("el-cascader")
+        options = dict()
+        options['v-model'] = "model"
+        options[':options'] = "options"
+        options[':props'] = "props"
+        options[':size'] = "size"
+        options[':filterable'] = "filterable"
+        options[':clearable'] = "clearable"
+        options['@change'] = "handleChange"
+        return DIV(ELCASCADER(**options), id="app")
+
+def use_cascader(component):
+    class Component:
+        def __init__(self, options=[], props={}, filterable=True, clearable=True, size=None, height=None, key=None, default=[]):
+            result = component(options=options, props=props, size=size, filterable=filterable, clearable=clearable, height=height, key=key, default=default)
+            self.result = result
+        def get(self):
+            return self.result if hasattr(self, 'result') else None
+    return Component
+
+Cascader = GenComponent('ElementPlusCascader', create_cascader_template, genscript(JS_create_cascader_directives), genscript(JS_create_cascader_methods)).encapsulate(use_cascader
+""")

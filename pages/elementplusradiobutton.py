@@ -56,3 +56,67 @@ with st.expander("Code"):
         st.code("""
         ra6 = RadioButton(buttons=radio1, key="ra6", size="large", fill="lightgreen", textcolor="red", default=defaultv)
         """)
+st.divider()
+st.markdown("###### The code used to create the RadioButton component")
+st.code("""
+#####  RadioButton definition
+
+def JS_create_radio_button_directives(parameters):
+    def f():
+        def fbuttons():
+            return Vue.reactive(parameters.buttons)
+        def fradio():
+            result = None
+            for b in range(len(parameters.buttons)):
+                if hasattr(parameters.buttons[b], "selected") and parameters.buttons[b].selected: result = parameters.buttons[b].value
+            return Vue.ref(result)
+        ret = dict()
+        ret['buttons'] = fbuttons()
+        ret['radio'] = fradio()
+        ret['size'] = parameters.size
+        ret['label'] = parameters.label
+        ret['disabled'] = parameters.disabled
+        ret['min'] = parameters.min
+        ret['max'] = parameters.max
+        ret['fill'] = parameters.fill
+        ret['textcolor'] = parameters.textcolor
+        return ret
+    return f
+
+def JS_create_radio_button_methods(parameters):
+    ret = dict()
+    def fhandleItem(button):
+        Streamlit.setComponentValue(button.value)
+    ret['handleItem'] = fhandleItem
+    return ret
+
+def create_radio_button_template():
+        ELRADIOBUTTON = gentag("el-radio-button")
+        ELRADIOGROUP = gentag("el-radio-group")
+        boptions = dict()
+        goptions = dict()
+        boptions['v-for'] = "button in buttons"
+        boptions[':label'] = "button.label"
+        boptions[':key'] = "button.value"
+        boptions[':border'] = "button.border"
+        boptions[':disabled'] = "button.disabled"
+        boptions['@change'] = "handleItem(button)"
+        goptions['v-model'] = "radio"
+        goptions[':size'] = "size"
+        goptions[':label'] = "label"
+        goptions[':disabled'] = "disabled"
+        goptions[':fill'] = "fill"
+        goptions[':text-color'] = "textcolor"
+        return DIV(ELRADIOGROUP(ELRADIOBUTTON(**boptions), **goptions), id="app")
+
+def use_radio_button(component):
+    class Component:
+        def __init__(self, buttons=[], size='default', key=None, default=None, fill=None, disabled=False, textcolor=None):
+            result = component(buttons=buttons, size=size, fill=fill, disabled=disabled, textcolor=textcolor, key=key, default=default)
+            self.result = result
+        def get(self):
+            return self.result if hasattr(self, 'result') else None
+    return Component
+
+RadioButton = GenComponent('ElementPlusRadioButton', create_radio_button_template, genscript(JS_create_radio_button_directives), genscript(JS_create_radio_button_methods)).encapsulate(use_radio_button)
+""")

@@ -54,3 +54,80 @@ with st.expander("Code"):
         st.code("""
         CheckboxButton(checkboxes=checkb1, key='cbg6', fill="lightgreen", textcolor="red", default=defaultv)
         """)
+st.divider()
+st.markdown("###### The code used to create the CheckboxButton component")
+st.code("""
+#####  CheckboxButton definition
+
+def JS_create_checkbox_button_directives(parameters):
+    def f():
+        def fcheckboxes():
+            for b in range(len(parameters.checkboxes)): parameters.xxxstatexxx[parameters.checkboxes[b].id] = parameters.checkboxes[b]
+            return Vue.reactive(parameters.checkboxes)
+        def fchecklist():
+            result = []
+            for b in range(len(parameters.checkboxes)):
+                if hasattr(parameters.checkboxes[b], "selected"):
+                    if parameters.checkboxes[b].selected:
+                        parameters.checkboxes[b].val = parameters.checkboxes[b].truevalue
+                        result.append(parameters.checkboxes[b].truevalue)
+                    else: parameters.checkboxes[b].val = parameters.checkboxes[b].falsevalue
+                else: parameters.checkboxes[b].val = parameters.checkboxes[b].falsevalue
+            return Vue.ref(result)
+        ret = dict()
+        ret['checkboxes'] = fcheckboxes()
+        ret['checklist'] = fchecklist()
+        ret['size'] = parameters.size
+        ret['label'] = parameters.label
+        ret['disabled'] = parameters.disabled
+        ret['min'] = parameters.min
+        ret['max'] = parameters.max
+        ret['fill'] = parameters.fill
+        ret['textcolor'] = parameters.textcolor
+        return ret
+    return f
+
+def JS_create_checkbox_button_methods(parameters):
+    ret = dict()
+    def fhandleItem(checkbox):
+        result = dict()
+        for b in parameters.xxxstatexxx:
+            if parameters.xxxstatexxx[b].id == checkbox.id:
+                if parameters.xxxstatexxx[b].val == parameters.xxxstatexxx[b].truevalue: parameters.xxxstatexxx[b].val = parameters.xxxstatexxx[b].falsevalue
+                else: parameters.xxxstatexxx[b].val = parameters.xxxstatexxx[b].truevalue
+            result[b] = parameters.xxxstatexxx[b].val
+        Streamlit.setComponentValue(result)
+    ret['handleItem'] = fhandleItem
+    return ret
+
+def create_checkbox_button_template():
+        ELCHECKBOXBUTTON = gentag("el-checkbox-button")
+        ELCHECKBOXGROUP = gentag("el-checkbox-group")
+        coptions = dict()
+        goptions = dict()
+        coptions['v-for'] = "checkbox in checkboxes"
+        coptions[':label'] = "checkbox.label"
+        coptions[':key'] = "checkbox.id"
+        coptions[':checked'] = "checkbox.selected"
+        coptions[':border'] = "checkbox.border"
+        coptions[':disabled'] = "checkbox.disabled"
+        coptions['@change'] = "handleItem(checkbox)"
+        goptions['v-model'] = "checklist"
+        goptions[':size'] = "size"
+        goptions[':label'] = "label"
+        goptions[':disabled'] = "disabled"
+        goptions[':fill'] = "fill"
+        goptions[':text-color'] = "textcolor"
+        return DIV(ELCHECKBOXGROUP(ELCHECKBOXBUTTON(**coptions), **goptions), id="app")
+
+def use_checkbox_button(component):
+    class Component:
+        def __init__(self, checkboxes=[], size='default', key=None, label=None, default=None, fill=None, min=None, max=None, disabled=False, textcolor=None):
+            result = component(checkboxes=checkboxes, size=size, label=label, fill=fill, min=min, max=max, disabled=disabled, textcolor=textcolor, key=key, default=default)
+            self.result = result
+        def get(self):
+            return self.result if hasattr(self, 'result') else None
+    return Component
+
+CheckboxButton = GenComponent('ElementPlusCheckboxButton', create_checkbox_button_template, genscript(JS_create_checkbox_button_directives), genscript(JS_create_checkbox_button_methods)).encapsulate(use_checkbox_button)
+""")
