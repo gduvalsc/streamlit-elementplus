@@ -565,6 +565,9 @@ def use_cascader(component):
             return self.result if hasattr(self, 'result') else None
     return Component
 
+Cascader = GenComponent('ElementPlusCascader', create_cascader_template, genscript(JS_create_cascader_directives), genscript(JS_create_cascader_methods)).encapsulate(use_cascader)
+
+
 #####  Tag definition
 
 def JS_create_tag_directives(parameters):
