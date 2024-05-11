@@ -2,10 +2,11 @@ import streamlit as st
 from pages.functions.definitions import *
 from streamlit_extras.switch_page_button import switch_page
 
-set_page_config()
+theme = set_page_config()
 gen_back_button()
 
 st.subheader("Tag", divider="rainbow")
+st.markdown("The '**Tag**' component visually defines a list of properties. It is possible to remove properties using the '**closable**' attribute, and it is possible to add new properties to the list.")
 
 tag1 = dict(name='Tag 1', type='primary')
 tag2 = dict(name='Tag 2', type='success')
@@ -14,14 +15,25 @@ tag4 = dict(name='Tag 4', type='warning')
 tag5 = dict(name='Tag 5', type='danger')
 tags1 = [tag1, tag2, tag3, tag4, tag5]
 defaultv = [x['name'] for x in tags1]
-t1 = Tag(tags=tags1, label='Tags', size='large', effect='dark', round=True, editable=True, default=defaultv)
+t1 = Tag(tags=tags1, label='Tags', size='large', effect='dark', round=True, editable=True, closable=True, default=defaultv, **theme)
 st.write(t1.get())
+with st.expander("Code"):
+        st.code("""
+        tag1 = dict(name='Tag 1', type='primary')
+        tag2 = dict(name='Tag 2', type='success')
+        tag3 = dict(name='Tag 3', type='info')
+        tag4 = dict(name='Tag 4', type='warning')
+        tag5 = dict(name='Tag 5', type='danger')
+        tags1 = [tag1, tag2, tag3, tag4, tag5]
+        defaultv = [x['name'] for x in tags1]
+        t1 = Tag(tags=tags1, label='Tags', size='large', effect='dark', round=True, editable=True, closable=True, default=defaultv, **theme)
+        """)
 st.divider()
 st.markdown("###### The code used to create the Tag component")
 st.code("""
 #####  Tag definition
 
-def JS_create_tag_directives(parameters):
+def JS_create_tag_directives(parameters, anchor):
     def f():
         def ftags():
             for b in range(len(parameters.tags)):
@@ -41,7 +53,7 @@ def JS_create_tag_directives(parameters):
         return ret
     return f
 
-def JS_create_tag_methods(parameters):
+def JS_create_tag_methods(parameters, anchor):
     ret = dict()
     def fclick(x):
         result = [b['name'] for b in parameters.tags]
@@ -103,8 +115,8 @@ def create_tag_template():
 
 def use_tag(component):
     class Component:
-        def __init__(self, tags=[], round=False, size='default', effect='light', closable=True, editable=False, label=None, space=10, key=None, default=[]):
-            result = component(tags=tags, round=round, size=size, effect=effect, closable=closable, editable=editable, label=label, space=space, key=key, default=default)
+        def __init__(self, default=[], **d):
+            result = component(default=default, **d)
             self.result = result
         def get(self):
             return self.result if hasattr(self, 'result') else None
