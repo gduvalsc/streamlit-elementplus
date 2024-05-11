@@ -2,7 +2,7 @@ import streamlit as st
 from pages.functions.definitions import *
 from streamlit_extras.switch_page_button import switch_page
 
-set_page_config()
+theme = set_page_config()
 
 st.subheader("Streamlit components based on Element Plus and Vue.js", divider="rainbow")
 st.markdown("""
@@ -26,7 +26,7 @@ button5 = dict(label='Radio',id='radio')
 button6 = dict(label='Radio Button',id='radiob')
 buttonsl1 = [button1, button2, button3, button4, button5, button6]
 defaultv = {x['id']:False for x in buttonsl1}
-bg1 = ButtonGroup(buttons=buttonsl1, type='primary', id='bg1', default=defaultv)
+bg1 = ButtonGroup(buttons=buttonsl1, type='primary', id='bg1', default=defaultv, **theme)
 if bg1.get()['button']: switch_page('elementplusbutton')
 if bg1.get()['buttong']: switch_page('elementplusbuttongroup')
 if bg1.get()['checkbox']: switch_page('elementpluscheckbox')
@@ -35,11 +35,40 @@ if bg1.get()['radio']: switch_page('elementplusradio')
 if bg1.get()['radiob']: switch_page('elementplusradiobutton')
 button1 = dict(label='Cascader',id='cascader')
 button2 = dict(label='Tag',id='tag')
-buttonsl2 = [button1, button2]
+button3 = dict(label='Color picker',id='cpick')
+button4 = dict(label='Date picker',id='datepick')
+button5 = dict(label='Alert',id='alert')
+button6 = dict(label='Dropdown',id='dropdown')
+button7 = dict(label='Slider',id='slider')
+buttonsl2 = [button1, button2, button3, button4, button5, button6, button7]
 defaultv = {x['id']:False for x in buttonsl2}
-bg2 = ButtonGroup(buttons=buttonsl2, type='primary', id='bg2', default=defaultv)
+bg2 = ButtonGroup(buttons=buttonsl2, type='primary', id='bg2', default=defaultv, **theme)
 if bg2.get()['cascader']: switch_page('elementpluscascader')
 if bg2.get()['tag']: switch_page('elementplustag')
+if bg2.get()['cpick']: switch_page('elementpluscolorpicker')
+if bg2.get()['datepick']: switch_page('elementplusdatepicker')
+if bg2.get()['alert']: switch_page('elementplusalert')
+if bg2.get()['dropdown']: switch_page('elementplusdropdown')
+if bg2.get()['slider']: switch_page('elementplusslider')
+button1 = dict(label='Tree select',id='treesel')
+button2 = dict(label='Tree',id='tree')
+button3 = dict(label='Result',id='result')
+button4 = dict(label='Switch',id='switch')
+button5 = dict(label='Progress',id='progress')
+button6 = dict(label='Form',id='form')
+button7 = dict(label='Badge button',id='badgebutton')
+button8 = dict(label='Menu',id='menu')
+buttonsl3 = [button1, button2, button3, button4, button5, button6, button7, button8]
+defaultv = {x['id']:False for x in buttonsl3}
+bg3 = ButtonGroup(buttons=buttonsl3, type='primary', id='bg3', default=defaultv, **theme)
+if bg3.get()['treesel']: switch_page('elementplustreeselect')
+if bg3.get()['tree']: switch_page('elementplustree')
+if bg3.get()['result']: switch_page('elementplusresult')
+if bg3.get()['switch']: switch_page('elementplusswitch')
+if bg3.get()['progress']: switch_page('elementplusprogress')
+if bg3.get()['form']: switch_page('elementplusform')
+if bg3.get()['badgebutton']: switch_page('elementplusbadgebutton')
+if bg3.get()['menu']: switch_page('elementplusmenu')
 
 st.markdown("For the second category of users, those who seek to understand how this was accomplished, here is the most comprehensive explanation possible:")
 st.markdown("Creating an external Streamlit component involves creating an HTML page. I find the method generally used and documented in Streamlit confusing and complex. Employing templates, npm, React, and delivering a Python package installable via pip is a rather sophisticated and daunting contraption, especially for novices")
@@ -60,7 +89,7 @@ st.markdown("An example of using **pscript**. The following python program:")
 st.code("""
 import pscript, inspect
 
-def JS_create_button_methods(parameters):
+def JS_create_button_methods(parameters, anchor):
     ret = dict()
     def fgetValue():
         Streamlit.setComponentValue(parameters.counter+1)
@@ -72,7 +101,7 @@ print(pscript.py2js(inspect.getsource(JS_create_button_methods)))
 st.markdown("After being executed, the following string will be rendered:")
 st.code("""
 var JS_create_button_methods;
-JS_create_button_methods = function flx_JS_create_button_methods (parameters) {
+JS_create_button_methods = function flx_JS_create_button_methods (parameters, anchor) {
     var fgetValue, ret;
     ret = {};
     fgetValue = (function flx_fgetValue () {
@@ -90,7 +119,7 @@ st.markdown("Without further ado, let's give an example of an 'Element Plus' but
 st.code("""
 #####  Button definition
 
-def JS_create_button_directives(parameters):
+def JS_create_button_directives(parameters, anchor):
     def f():
         ret = dict()
         ret['label'] = parameters.label
@@ -101,11 +130,12 @@ def JS_create_button_directives(parameters):
         ret['plain'] = parameters.plain
         ret['disabled'] = parameters.disabled
         ret['circle'] = parameters.circle
+        ret['color'] = parameters.color
         ret['icon'] = Vue.shallowRef(ElementPlusIconsVue[parameters.icon])
         return ret
     return f
 
-def JS_create_button_methods(parameters):
+def JS_create_button_methods(parameters, anchor):
     ret = dict()
     def fgetValue():
         Streamlit.setComponentValue(parameters.counter+1)
@@ -125,6 +155,7 @@ def create_button_template():
         options[':type'] = "type"
         options[':size'] = "size"
         options[':icon'] = "icon"
+        options[':color'] = "color"
         options['@click'] = "getValue"
         ifoptions['v-if'] = "label !== null"
         elseoptions['v-else'] = True
@@ -132,10 +163,10 @@ def create_button_template():
 
 def use_button(component):
     class Component:
-        def __init__(self, label=None, type='default', round=False, circle=False, plain=False, disabled=False, link=False, size='default', icon=None, id=None):
+        def __init__(self, id=None, **d):
             id = f'Component_{id}'
             if id not in st.session_state: st.session_state[id] = dict(old=0, new=0)
-            result = component(label=label, type=type, round=round, circle=circle, plain=plain, disabled=disabled, link=link, size=size, icon=icon, id=id, counter=st.session_state[id]['new'], default=st.session_state[id]['new'])
+            result = component(id=id, counter=st.session_state[id]['new'], default=st.session_state[id]['new'], **d)
             if result != st.session_state[id]['new']:
                 st.session_state[id]['new'] = result
                 st.rerun()
@@ -148,7 +179,6 @@ def use_button(component):
     return Component
 
 Button = GenComponent('ElementPlusButton', create_button_template, genscript(JS_create_button_directives), genscript(JS_create_button_methods)).encapsulate(use_button)
-
 """)
 st.markdown("The element that will be used by the end-user is the one listed on the last line of the program:")
 st.code("Button = GenComponent('ElementPlusButton', create_button_template, genscript(JS_create_button_directives), genscript(JS_create_button_methods)).encapsulate(use_button)")
@@ -174,6 +204,7 @@ def create_button_template():
         options[':type'] = "type"
         options[':size'] = "size"
         options[':icon'] = "icon"
+        options[':color'] = "color"
         options['@click'] = "getValue"
         ifoptions['v-if'] = "label !== null"
         elseoptions['v-else'] = True
@@ -182,7 +213,7 @@ def create_button_template():
 st.markdown("This is the part that generates the HTML tags needed to create the component on the page. In our example, we need a '**el-button**' tag. This is created by the '**gentag**' function. The generated elements sometimes have specific attributes that are not seen in standard HTML but are a Vue.js specificity. We have attributes prefixed with the '**:**' character like '**: disabled**'. This means the attribute references a directive that will be defined in the '**directives**' section. We also have attributes prefixed with the '**@**' character. These are attributes defined in the '**methods**' section. We have other attributes like '**v-if**' and '**v-else**' that allow conditionally generating HTML tags. The value of 'v-if' is a JavaScript expression that is either true or false. If it's true, the 'v-if' element will be used; otherwise, it's the 'v-else' element. Finally, for generating text outside attributes, there are elements like **{{label}}** in the example. They also reference definitions expressed in the 'directives' section.")
 st.markdown("###### Directives")
 st.code("""
-def JS_create_button_directives(parameters):
+def JS_create_button_directives(parameters, anchor):
     def f():
         ret = dict()
         ret['label'] = parameters.label
@@ -193,6 +224,7 @@ def JS_create_button_directives(parameters):
         ret['plain'] = parameters.plain
         ret['disabled'] = parameters.disabled
         ret['circle'] = parameters.circle
+        ret['color'] = parameters.color
         ret['icon'] = Vue.shallowRef(ElementPlusIconsVue[parameters.icon])
         return ret
     return f
@@ -200,7 +232,7 @@ def JS_create_button_directives(parameters):
 st.markdown("This is a function that returns a function whose output is a dictionary. The attribute ': disabled' is set to 'disabled'. The value of the attribute (disabled) should appear in the generated dictionary. In our case, we have ret['disabled'] = parameters.disabled. In other words, the disabled attribute of the el-button element will be set by the disabled parameter passed by Python.")
 st.markdown("###### Methods")
 st.code("""
-def JS_create_button_methods(parameters):
+def JS_create_button_methods(parameters, anchor):
     ret = dict()
     def fgetValue():
         Streamlit.setComponentValue(parameters.counter+1)
@@ -213,10 +245,10 @@ st.markdown("###### Encapsulation function")
 st.code("""
 def use_button(component):
     class Component:
-        def __init__(self, label=None, type='default', round=False, circle=False, plain=False, disabled=False, link=False, size='default', icon=None, id=None):
+        def __init__(self, id=None, **d):
             id = f'Component_{id}'
             if id not in st.session_state: st.session_state[id] = dict(old=0, new=0)
-            result = component(label=label, type=type, round=round, circle=circle, plain=plain, disabled=disabled, link=link, size=size, icon=icon, id=id, counter=st.session_state[id]['new'], default=st.session_state[id]['new'])
+            result = component(id=id, counter=st.session_state[id]['new'], default=st.session_state[id]['new'], **d)
             if result != st.session_state[id]['new']:
                 st.session_state[id]['new'] = result
                 st.rerun()
