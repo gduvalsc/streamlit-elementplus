@@ -2,3 +2,4 @@ htmlgenerator
 pscript
 pinspect
 streamlit_extras
+st_theme
